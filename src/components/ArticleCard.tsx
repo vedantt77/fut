@@ -1,15 +1,16 @@
 import { motion } from 'framer-motion';
-import { ArrowBigUp, ArrowBigDown, MessageSquare, ExternalLink } from 'lucide-react';
+import { ArrowBigUp, MessageSquare, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { Article } from '../types';
 
 interface ArticleCardProps {
   article: Article;
-  onVote: (id: string, direction: 'up' | 'down') => void;
+  onVote: (id: string) => void;
   onOpenArticle: (article: Article) => void;
+  hasVoted: boolean;
 }
 
-export function ArticleCard({ article, onVote, onOpenArticle }: ArticleCardProps) {
+export function ArticleCard({ article, onVote, onOpenArticle, hasVoted }: ArticleCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -22,22 +23,15 @@ export function ArticleCard({ article, onVote, onOpenArticle }: ArticleCardProps
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onVote(article.id, 'up');
+              onVote(article.id);
             }}
-            className="p-1 rounded hover:bg-gray-100 text-gray-600 hover:text-blue-600 transition-colors"
+            className={`p-1 rounded hover:bg-gray-100 transition-colors ${
+              hasVoted ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'
+            }`}
           >
             <ArrowBigUp size={24} />
           </button>
           <span className="font-bold text-lg">{article.votes}</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onVote(article.id, 'down');
-            }}
-            className="p-1 rounded hover:bg-gray-100 text-gray-600 hover:text-red-600 transition-colors"
-          >
-            <ArrowBigDown size={24} />
-          </button>
         </div>
         
         <div className="flex-1">
