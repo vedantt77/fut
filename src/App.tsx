@@ -1,82 +1,30 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Article, Comment } from './types';
+import { Article } from './types';
 import { ArticleList } from './components/articles/ArticleList';
 import { SubmitArticle } from './components/SubmitArticle';
 import { Header } from './components/layout/Header';
+import { SortingTabs } from './components/layout/SortingTabs';
 import { useVotes } from './hooks/useVotes';
 import { ArticlePage } from './pages/ArticlePage';
 import { initialArticles } from './data/initialArticles';
+import { useArticles } from './hooks/useArticles';
 
 export function App() {
-  const [articles, setArticles] = useState<Article[]>(initialArticles);
   const [showSubmit, setShowSubmit] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const { toggleVote, hasVoted } = useVotes();
-
-  const handleVote = (id: string) => {
-    const isVoting = toggleVote(id);
-    setArticles(prev =>
-      prev.map(article =>
-        article.id === id
-          ? { ...article, votes: article.votes + (isVoting ? 1 : -1) }
-          : article
-      )
-    );
-  };
-
-  const handleSubmit = (articleData: { title: string; url: string; description: string }) => {
-    const newArticle: Article = {
-      id: Date.now().toString(),
-      ...articleData,
-      votes: 0,
-      author: 'Anonymous',
-      timestamp: new Date(),
-      commentCount: 0,
-      comments: []
-    };
-    setArticles(prev => [newArticle, ...prev]);
-    setShowSubmit(false);
-  };
-
-  const handleAddComment = (articleId: string, commentData: { author: string; content: string }) => {
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      articleId,
-      ...commentData,
-      timestamp: new Date(),
-      votes: 0
-    };
-
-    setArticles(prev =>
-      prev.map(article =>
-        article.id === articleId
-          ? {
-              ...article,
-              commentCount: article.commentCount + 1,
-              comments: [...(article.comments || []), newComment]
-            }
-          : article
-      )
-    );
-  };
-
-  const handleVoteComment = (articleId: string, commentId: string, direction: 'up' | 'down') => {
-    setArticles(prev =>
-      prev.map(article =>
-        article.id === articleId
-          ? {
-              ...article,
-              comments: article.comments?.map(comment =>
-                comment.id === commentId
-                  ? { ...comment, votes: comment.votes + (direction === 'up' ? 1 : -1) }
-                  : comment
-              )
-            }
-          : article
-      )
-    );
-  };
+  const {
+    articles,
+    currentSort,
+    currentTimeRange,
+    setCurrentSort,
+    setCurrentTimeRange,
+    handleVote,
+    handleAddComment,
+    handleVoteComment,
+    handleSubmit
+  } = useArticles(initialArticles);
 
   if (selectedArticle) {
     return (
@@ -94,6 +42,17 @@ export function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Header onShowSubmit={() => setShowSubmit(!showSubmit)} />
+      
+      <div className="bg-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <SortingTabs
+            currentSort={currentSort}
+            currentTimeRange={currentTimeRange}
+            onSortChange={setCurrentSort}
+            onTimeRangeChange={setCurrentTimeRange}
+          />
+        </div>
+      </div>
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <AnimatePresence>
